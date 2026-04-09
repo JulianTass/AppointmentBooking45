@@ -1,0 +1,7 @@
+backend/data/
+*.db
+.DS_Store
+.vscode/
+__pycache__/
+*.py[cod]
+

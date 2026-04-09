@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Appointment Booking Calendar</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="topbar__title">
+          <div class="logo">📅</div>
+          <div>
+            <div class="topbar__h1">Appointment Booking Calendar</div>
+            <div class="topbar__sub">Mobile-responsive calendar with booking details</div>
+          </div>
+        </div>
+        <div class="topbar__actions">
+          <button
+            id="btnRandomise"
+            class="btn btn--primary"
+            type="button"
+            aria-label="Randomise bookings"
+            title="Randomise bookings"
+          >Randomise</button>
+          <button
+            id="btnToggleManual"
+            class="btn"
+            type="button"
+            aria-label="Add booking"
+            title="Add booking"
+          >Add booking</button>
+          <button
+            id="btnDeleteAll"
+            class="btn btn--danger"
+            type="button"
+            aria-label="Delete all bookings"
+            title="Delete all bookings"
+          >Delete all</button>
+        </div>
+      </header>
+
+      <main id="layoutMain" class="layout">
+        <section class="calendarWrap">
+          <div class="calendarHeader">
+            <button id="btnPrev" class="iconBtn" aria-label="Previous month" type="button">‹</button>
+            <div class="calendarHeader__center">
+              <div id="monthLabel" class="monthLabel">Month</div>
+              <div id="monthSub" class="monthSub">Loading…</div>
+            </div>
+            <div class="calendarHeader__actions">
+              <button id="btnRefresh" class="btn" type="button" aria-label="Refresh calendar">Refresh</button>
+              <button id="btnNext" class="iconBtn" aria-label="Next month" type="button">›</button>
+            </div>
+          </div>
+          <div class="legendBar">
+            <span class="legendItem">
+              <span class="legendDot legendDot--morning"></span>
+              Morning
+            </span>
+            <span class="legendItem">
+              <span class="legendDot legendDot--afternoon"></span>
+              Afternoon
+            </span>
+          </div>
+
+          <div class="calendarGrid">
+            <div class="dow">Mon</div>
+            <div class="dow">Tue</div>
+            <div class="dow">Wed</div>
+            <div class="dow">Thu</div>
+            <div class="dow">Fri</div>
+            <div class="dow">Sat</div>
+            <div class="dow">Sun</div>
+            <div id="calendarCells" class="calendarCells"></div>
+          </div>
+
+          <div id="toastHost" class="toastHost" aria-live="polite"></div>
+        </section>
+
+        <aside id="manualPanel" class="manualPanel manualPanel--hidden">
+          <h2 class="panelTitle">Add booking</h2>
+          <form id="manualForm" class="form">
+            <label class="field">
+              <span>Client ID</span>
+              <input id="fClientId" type="text" required />
+            </label>
+            <label class="field">
+              <span>Client name</span>
+              <input id="fClientName" type="text" required />
+            </label>
+            <label class="field">
+              <span>DOB (date)</span>
+              <input id="fClientDob" type="date" required />
+            </label>
+            <label class="field field--row">
+              <span>Appointment date</span>
+              <input id="fStartDate" type="date" required />
+            </label>
+            <label class="field field--row">
+              <span>Appointment time</span>
+              <input id="fStartTime" type="time" step="900" required />
+            </label>
+            <label class="field field--row">
+              <span>Duration (minutes)</span>
+              <input id="fDuration" type="number" min="5" step="5" value="30" />
+            </label>
+            <button class="btn btn--primary btn--full" type="submit">Book appointment</button>
+            <div class="hint">
+              Tip: click any appointment on the calendar to view details.
+            </div>
+          </form>
+        </aside>
+      </main>
+
+      <section class="bookedSection">
+        <div class="bookedSection__header">
+          <h2 id="bookedHeading" class="panelTitle">Booked appointments (today)</h2>
+          <div class="bookedSection__tools">
+            <label class="bookedFilter">
+              <span>Filter date</span>
+              <input id="bookedFilterDate" type="date" />
+            </label>
+            <div id="bookedCount" class="bookedCount">0</div>
+          </div>
+        </div>
+        <div id="bookedList" class="bookedList"></div>
+      </section>
+
+      <div id="modalOverlay" class="modalOverlay" hidden>
+        <div id="detailsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+          <div class="modal__header">
+            <div>
+              <div id="modalTitle" class="modal__title">Appointment</div>
+              <div id="modalSubtitle" class="modal__sub"></div>
+            </div>
+            <button id="btnCloseModal" class="iconBtn iconBtn--close" aria-label="Close" type="button">×</button>
+          </div>
+
+          <div class="modal__body">
+            <div class="detailsGrid">
+              <div class="detail">
+                <div class="detail__k">Booking Reference</div>
+                <div id="dBookingRef" class="detail__v"></div>
+              </div>
+              <div class="detail">
+                <div class="detail__k">Client ID</div>
+                <div id="dClientId" class="detail__v"></div>
+              </div>
+              <div class="detail">
+                <div class="detail__k">Client Name</div>
+                <div id="dClientName" class="detail__v"></div>
+              </div>
+              <div class="detail">
+                <div class="detail__k">Client DOB</div>
+                <div id="dClientDob" class="detail__v"></div>
+              </div>
+              <div class="detail">
+                <div class="detail__k">Appointment</div>
+                <div id="dStart" class="detail__v"></div>
+              </div>
+              <div class="detail">
+                <div class="detail__k">Duration</div>
+                <div id="dDuration" class="detail__v"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal__footer">
+            <button id="btnCancelBooking" class="btn btn--danger" type="button">Cancel appointment</button>
+            <button id="btnRescheduleExisting" class="btn" type="button">Reschedule…</button>
+            <button id="btnDeleteBooking" class="btn btn--danger" type="button">Delete</button>
+          </div>
+
+          <div id="rescheduleBox" class="rescheduleBox" hidden>
+            <div class="rescheduleTitle">Pick new slot(s)</div>
+            <div class="rescheduleRow">
+              <label class="field">
+                <span>DOB (for verification)</span>
+                <input id="rClientDob" type="date" />
+              </label>
+            </div>
+            <div class="rescheduleRow">
+              <label class="field">
+                <span>Requested slots (comma-separated)</span>
+                <input
+                  id="rSlots"
+                  type="text"
+                  placeholder="e.g. 03/04/2026 09:30, 03/04/2026 10:00"
+                />
+              </label>
+            </div>
+            <div class="rescheduleActions">
+              <button id="btnSubmitReschedule" class="btn btn--primary" type="button">Try reschedule</button>
+              <button id="btnCloseReschedule" class="btn" type="button">Close</button>
+            </div>
+            <div id="rResult" class="rResult"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
